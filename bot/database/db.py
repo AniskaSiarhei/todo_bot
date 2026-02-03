@@ -60,3 +60,19 @@ class Database:
                 (task_id, user_id)
             )
             conn.commit()
+
+    def get_active_tasks(self, user_id: int):
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "SELECT id, title FROM tasks WHERE user_id = ? AND done = 0 ORDER BY id",
+                (user_id,)
+            )
+            return cursor.fetchall()
+
+    def get_completed_tasks(self, user_id: int):
+        with self._connect() as conn:
+            cursor = conn.execute(
+                "SELECT id, title FROM tasks WHERE user_id = ? AND done = 1 ORDER BY id",
+                (user_id,)
+            )
+            return cursor.fetchall()

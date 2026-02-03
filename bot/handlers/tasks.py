@@ -1,9 +1,9 @@
-from aiogram.types import Message, CallbackQuery
-from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import Command
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message, CallbackQuery
 
 from bot.database.db import Database
+from bot.keyboards.inline import task_actions, main_menu
 
 db = Database()
 
@@ -27,6 +27,124 @@ async def add_task_callback(callback: CallbackQuery, state: FSMContext):
 
 # текст задачи
 async def save_task(message: Message, state: FSMContext):
-    db.add_task(message.from_user.id, message.text)
-    await message.answer("✅ Задача добавлена!")
+    title = message.text.strip()
+
+    if not title:
+        await message.answer("⚠️ Задача не может быть пустой. Напиши текст:")
+        return
+
+    db.add_task(message.from_user.id, title)
+
+    await message.answer(
+        "✅ Задача добавлена!",
+        reply_markup=main_menu()
+    )
     await state.clear()
+
+from bot.keyboards.inline import task_actions, main_menu
+
+async def list_tasks_callback(callback: CallbackQuery):
+    tasks = db.get_active_tasks(callback.from_user.id)
+
+    if not tasks:
+        await callback.message.answer(
+            "🎉 У тебя нет активных задач!",
+            reply_markup=main_menu()
+        )
+        await callback.answer()
+        return
+
+    await callback.message.answer("📋 *Активные задачи:*", parse_mode="Markdown")
+
+    for task_id, title in tasks:
+        await callback.message.answer(
+            f"⬜ {title}",
+            reply_markup=task_actions(task_id)
+        )
+
+    await callback.message.answer(
+        "Что делаем дальше? 👇",
+        reply_markup=main_menu()
+    )
+
+    await callback.answer()
+
+
+# Обработчик ✔️ «выполнено
+from bot.keyboards.inline import main_menu
+
+async def mark_done_callback(callback: CallbackQuery):
+    task_id = int(callback.data.split(":")[1])
+
+    db.mark_done(task_id, callback.from_user.id)
+
+    await callback.message.edit_text("✅ Задача выполнена и перенесена")
+    await callback.message.answer(
+        "Отлично 💪 Она теперь в разделе «Выполненные»",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
+
+
+
+# Обработчик ❌ «удалить»
+async def delete_task_callback(callback: CallbackQuery):
+    task_id = int(callback.data.split(":")[1])
+
+    db.delete_task(task_id, callback.from_user.id)
+
+    await callback.message.edit_text("❌ Задача удалена")
+    await callback.message.answer(
+        "Задачу убрали 🧹 Что дальше?",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
+
+async def completed_tasks_callback(callback: CallbackQuery):
+    tasks = db.get_completed_tasks(callback.from_user.id)
+
+    if not tasks:
+        await callback.message.answer(
+            "📭 Выполненных задач пока нет",
+            reply_markup=main_menu()
+        )
+        await callback.answer()
+        return
+
+    await callback.message.answer("✅ *Выполненные задачи:*", parse_mode="Markdown")
+
+    for task_id, title in tasks:
+        await callback.message.answer(
+            f"✅ {title}",
+            reply_markup=task_actions(task_id)
+        )
+
+    await callback.message.answer(
+        "Можно удалить выполненные задачи 👇",
+        reply_markup=main_menu()
+    )
+
+    await callback.answer()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

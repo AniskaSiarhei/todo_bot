@@ -9,7 +9,8 @@ from bot.handlers.tasks import (
     add_task_command,
     add_task_callback,
     save_task,
-    AddTask
+    AddTask,
+    list_tasks_callback, mark_done_callback, delete_task_callback, completed_tasks_callback
 )
 
 
@@ -17,11 +18,36 @@ async def main():
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
 
+    # ===== MESSAGE HANDLERS =====
     dp.message.register(start_handler, Command("start"))
     dp.message.register(add_task_command, Command("add"))
     dp.message.register(save_task, AddTask.waiting_for_title)
 
-    dp.callback_query.register(add_task_callback, lambda c: c.data == "add_task")
+    # ===== CALLBACK HANDLERS =====
+    dp.callback_query.register(
+        add_task_callback,
+        lambda c: c.data == "add_task"
+    )
+
+    dp.callback_query.register(
+        list_tasks_callback,
+        lambda c: c.data == "list_tasks"
+    )
+
+    dp.callback_query.register(
+        mark_done_callback,
+        lambda c: c.data.startswith("done:")
+    )
+
+    dp.callback_query.register(
+        delete_task_callback,
+        lambda c: c.data.startswith("delete:")
+    )
+
+    dp.callback_query.register(
+        completed_tasks_callback,
+        lambda c: c.data == "completed_tasks"
+    )
 
     await dp.start_polling(bot)
 
