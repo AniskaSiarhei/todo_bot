@@ -76,3 +76,11 @@ class Database:
                 (user_id,)
             )
             return cursor.fetchall()
+
+    def delete_completed_tasks(self, user_id: int):
+        with self._connect() as conn:
+            conn.execute(
+                "DELETE FROM tasks WHERE user_id = ? AND done = 1",
+                (user_id,)
+            )
+            conn.commit()

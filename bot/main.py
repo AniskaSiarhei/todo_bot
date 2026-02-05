@@ -10,7 +10,10 @@ from bot.handlers.tasks import (
     add_task_callback,
     save_task,
     AddTask,
-    list_tasks_callback, mark_done_callback, delete_task_callback, completed_tasks_callback
+    list_tasks_callback,
+    mark_done_callback,
+    delete_task_callback,
+    completed_tasks_callback, delete_completed_tasks_callback, main_menu_callback
 )
 
 
@@ -48,6 +51,17 @@ async def main():
         completed_tasks_callback,
         lambda c: c.data == "completed_tasks"
     )
+
+    dp.callback_query.register(
+        delete_completed_tasks_callback,
+        lambda c: c.data == "delete_completed_tasks"
+    )
+
+    dp.callback_query.register(
+        main_menu_callback,
+        lambda c: c.data == "main_menu"
+    )
+
 
     await dp.start_polling(bot)
 

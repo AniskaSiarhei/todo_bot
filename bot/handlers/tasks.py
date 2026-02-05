@@ -3,7 +3,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
 
 from bot.database.db import Database
-from bot.keyboards.inline import task_actions, main_menu
+from bot.keyboards.inline import task_actions, main_menu, completed_tasks_menu
 
 db = Database()
 
@@ -41,7 +41,6 @@ async def save_task(message: Message, state: FSMContext):
     )
     await state.clear()
 
-from bot.keyboards.inline import task_actions, main_menu
 
 async def list_tasks_callback(callback: CallbackQuery):
     tasks = db.get_active_tasks(callback.from_user.id)
@@ -71,8 +70,6 @@ async def list_tasks_callback(callback: CallbackQuery):
 
 
 # Обработчик ✔️ «выполнено
-from bot.keyboards.inline import main_menu
-
 async def mark_done_callback(callback: CallbackQuery):
     task_id = int(callback.data.split(":")[1])
 
@@ -84,7 +81,6 @@ async def mark_done_callback(callback: CallbackQuery):
         reply_markup=main_menu()
     )
     await callback.answer()
-
 
 
 # Обработчик ❌ «удалить»
@@ -99,6 +95,7 @@ async def delete_task_callback(callback: CallbackQuery):
         reply_markup=main_menu()
     )
     await callback.answer()
+
 
 async def completed_tasks_callback(callback: CallbackQuery):
     tasks = db.get_completed_tasks(callback.from_user.id)
@@ -121,30 +118,25 @@ async def completed_tasks_callback(callback: CallbackQuery):
 
     await callback.message.answer(
         "Можно удалить выполненные задачи 👇",
-        reply_markup=main_menu()
+        reply_markup=completed_tasks_menu()
     )
 
     await callback.answer()
 
 
+async def delete_completed_tasks_callback(callback: CallbackQuery):
+    db.delete_completed_tasks(callback.from_user.id)
 
+    await callback.message.edit_text("🧹 Выполненные задачи удалены")
+    await callback.message.answer(
+        "Готово! Что дальше? 👇",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+async def main_menu_callback(callback: CallbackQuery):
+    await callback.message.answer(
+        "Выбери действие 👇",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
