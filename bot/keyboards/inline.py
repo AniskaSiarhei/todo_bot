@@ -20,6 +20,15 @@ def task_actions(task_id: int):
         ]
     ])
 
+def completed_task_actions(task_id: int):
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="↩️ Восстановить", callback_data=f"restore:{task_id}"),
+            InlineKeyboardButton(text="❌", callback_data=f"delete:{task_id}")
+        ]
+    ])
+
+
 def completed_tasks_menu():
     return InlineKeyboardMarkup(inline_keyboard=[
         [

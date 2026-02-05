@@ -134,6 +134,18 @@ async def delete_completed_tasks_callback(callback: CallbackQuery):
     )
     await callback.answer()
 
+async def restore_task_callback(callback: CallbackQuery):
+    task_id = int(callback.data.split(":")[1])
+
+    db.restore_task(task_id, callback.from_user.id)
+
+    await callback.message.edit_text("↩️ Задача восстановлена")
+    await callback.message.answer(
+        "Она снова в активных задачах 👍",
+        reply_markup=main_menu()
+    )
+    await callback.answer()
+
 async def main_menu_callback(callback: CallbackQuery):
     await callback.message.answer(
         "Выбери действие 👇",

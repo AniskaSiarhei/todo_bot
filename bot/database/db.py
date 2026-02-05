@@ -84,3 +84,11 @@ class Database:
                 (user_id,)
             )
             conn.commit()
+
+    def restore_task(self, task_id: int, user_id: int):
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE tasks SET done = 0 WHERE id = ? AND user_id = ?",
+                (task_id, user_id)
+            )
+            conn.commit()

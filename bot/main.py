@@ -13,7 +13,7 @@ from bot.handlers.tasks import (
     list_tasks_callback,
     mark_done_callback,
     delete_task_callback,
-    completed_tasks_callback, delete_completed_tasks_callback, main_menu_callback
+    completed_tasks_callback, delete_completed_tasks_callback, main_menu_callback, restore_task_callback
 )
 
 
@@ -52,9 +52,15 @@ async def main():
         lambda c: c.data == "completed_tasks"
     )
 
+
     dp.callback_query.register(
         delete_completed_tasks_callback,
         lambda c: c.data == "delete_completed_tasks"
+    )
+
+    dp.callback_query.register(
+        restore_task_callback,
+        lambda c: c.data.startswith("restore:")
     )
 
     dp.callback_query.register(
