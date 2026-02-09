@@ -35,6 +35,6 @@ def completed_tasks_menu():
             InlineKeyboardButton(text="🗑️ Удалить выполненные", callback_data="delete_completed_tasks")
         ],
         [
-            InlineKeyboardButton(text="⬅️ В меню", callback_data="main_menu")
+            # InlineKeyboardButton(text="⬅️ В меню", callback_data="main_menu")
         ]
     ])

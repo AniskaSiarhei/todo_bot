@@ -2,6 +2,7 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import Command
+import logging
 
 from bot.config import BOT_TOKEN
 from bot.handlers.start import start_handler
@@ -13,17 +14,27 @@ from bot.handlers.tasks import (
     list_tasks_callback,
     mark_done_callback,
     delete_task_callback,
-    completed_tasks_callback, delete_completed_tasks_callback, main_menu_callback, restore_task_callback
+    completed_tasks_callback, delete_completed_tasks_callback,
+    # main_menu_callback,
+    restore_task_callback,
+    list_tasks_command, completed_tasks_command, menu_command
 )
 
+logging.basicConfig(level=logging.INFO)
 
 async def main():
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
 
+    logging.info("🤖 Бот успешно запущен!")
+
     # ===== MESSAGE HANDLERS =====
     dp.message.register(start_handler, Command("start"))
     dp.message.register(add_task_command, Command("add"))
+    dp.message.register(list_tasks_command, Command("list"))
+    dp.message.register(completed_tasks_command, Command("completed"))
+    dp.message.register(menu_command, Command("menu"))
+
     dp.message.register(save_task, AddTask.waiting_for_title)
 
     # ===== CALLBACK HANDLERS =====
@@ -63,10 +74,10 @@ async def main():
         lambda c: c.data.startswith("restore:")
     )
 
-    dp.callback_query.register(
-        main_menu_callback,
-        lambda c: c.data == "main_menu"
-    )
+    # dp.callback_query.register(
+    #     main_menu_callback,
+    #     lambda c: c.data == "main_menu"
+    # )
 
 
     await dp.start_polling(bot)
