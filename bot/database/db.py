@@ -92,3 +92,22 @@ class Database:
                 (task_id, user_id)
             )
             conn.commit()
+
+    def update_task(self, task_id: int, user_id: int, text: str):
+        with self._connect() as conn:
+            conn.execute("""
+                UPDATE tasks
+                SET title = ?
+                WHERE id = ? AND user_id = ?
+            """, (text, task_id, user_id))
+
+    def get_task_by_id(self, task_id: int, user_id: int):
+        with self._connect() as conn:
+            cur = conn.execute("""
+                SELECT title
+                FROM tasks
+                WHERE id = ? AND user_id = ?
+            """, (task_id, user_id))
+
+            return cur.fetchone()
+

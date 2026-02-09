@@ -17,8 +17,9 @@ from bot.handlers.tasks import (
     completed_tasks_callback, delete_completed_tasks_callback,
     # main_menu_callback,
     restore_task_callback,
-    list_tasks_command, completed_tasks_command, menu_command
+    list_tasks_command, completed_tasks_command, menu_command, edit_task_callback, save_edited_task
 )
+from bot.states.task import EditTaskState
 
 logging.basicConfig(level=logging.INFO)
 
@@ -72,6 +73,16 @@ async def main():
     dp.callback_query.register(
         restore_task_callback,
         lambda c: c.data.startswith("restore:")
+    )
+
+    dp.callback_query.register(
+        edit_task_callback,
+        lambda c: c.data.startswith("edit:")
+    )
+
+    dp.message.register(
+        save_edited_task,
+        EditTaskState.waiting_for_text
     )
 
     # dp.callback_query.register(

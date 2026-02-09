@@ -7,6 +7,7 @@ from bot.keyboards.inline import (task_actions,
                                   main_menu,
                                   completed_tasks_menu, completed_task_actions)
 from bot.renderers.tasks import TasksRenderer
+from bot.states.task import EditTaskState
 
 db = Database()
 
@@ -138,6 +139,54 @@ async def completed_tasks_command(message: Message):
         "Можно удалить выполненные задачи 👇",
         reply_markup=completed_tasks_menu()
     )
+
+async def edit_task_callback(callback: CallbackQuery, state: FSMContext):
+
+    task_id = int(callback.data.split(":")[1])
+
+    task = db.get_task_by_id(task_id, callback.from_user.id)
+
+    if not task:
+        await callback.answer("❌ Задача не найдена")
+        return
+
+    old_text = task[0]
+
+    await state.update_data(edit_task_id=task_id)
+
+    await callback.message.edit_text(
+        "✏️ Отредактируй задачу и отправь новый текст 👇\n\n"
+        f"`{old_text}`",
+        parse_mode="Markdown"
+    )
+
+    await state.set_state(EditTaskState.waiting_for_text)
+
+    await callback.answer()
+
+
+
+async def save_edited_task(message: Message, state: FSMContext):
+
+    data = await state.get_data()
+    task_id = data.get("edit_task_id")
+
+    new_text = message.text.strip()
+
+    if not new_text:
+        await message.answer("⚠️ Текст не может быть пустым")
+        return
+
+    if len(new_text) > 200:
+        await message.answer("⚠️ Макс. 200 символов")
+        return
+
+    db.update_task(task_id, message.from_user.id, new_text)
+
+    await state.clear()
+
+    await message.answer("✏️ Задача обновлена ✅")
+
 
 
 # /menu

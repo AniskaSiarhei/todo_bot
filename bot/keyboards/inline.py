@@ -15,16 +15,20 @@ def main_menu():
 def task_actions(task_id: int):
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="✔️", callback_data=f"done:{task_id}"),
-            InlineKeyboardButton(text="❌", callback_data=f"delete:{task_id}")
+            InlineKeyboardButton(text="✏️ Редактировать", callback_data=f"edit:{task_id}")
+        ],
+        [
+            InlineKeyboardButton(text="✅ Готово", callback_data=f"done:{task_id}"),
+            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{task_id}")
         ]
     ])
+
 
 def completed_task_actions(task_id: int):
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="↩️ Восстановить", callback_data=f"restore:{task_id}"),
-            InlineKeyboardButton(text="❌", callback_data=f"delete:{task_id}")
+            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{task_id}")
         ]
     ])
 
