@@ -5,7 +5,7 @@ from aiogram.types import Message, CallbackQuery
 from bot.database.db import Database
 from bot.keyboards.inline import (task_actions,
                                   main_menu,
-                                  completed_tasks_menu, completed_task_actions)
+                                  completed_tasks_menu, completed_task_actions, cancel_edit_keyboard)
 from bot.renderers.tasks import TasksRenderer
 from bot.states.task import EditTaskState
 
@@ -157,7 +157,8 @@ async def edit_task_callback(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         "✏️ Отредактируй задачу и отправь новый текст 👇\n\n"
         f"`{old_text}`",
-        parse_mode="Markdown"
+        parse_mode="Markdown",
+        reply_markup=cancel_edit_keyboard()
     )
 
     await state.set_state(EditTaskState.waiting_for_text)
@@ -186,6 +187,29 @@ async def save_edited_task(message: Message, state: FSMContext):
     await state.clear()
 
     await message.answer("✏️ Задача обновлена ✅")
+
+    # Показываем обновлённый список
+    await TasksRenderer.show_active(
+        message,
+        message.from_user.id
+    )
+
+
+async def cancel_edit_callback(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+    await state.clear()
+
+    await callback.message.edit_text("❌ Редактирование отменено")
+
+    # Возвращаем список активных
+    await TasksRenderer.show_active(
+        callback.message,
+        callback.from_user.id
+    )
+
+    await callback.answer("Отменено")
 
 
 

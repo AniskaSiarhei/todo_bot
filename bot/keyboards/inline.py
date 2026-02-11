@@ -42,3 +42,13 @@ def completed_tasks_menu():
             # InlineKeyboardButton(text="⬅️ В меню", callback_data="main_menu")
         ]
     ])
+
+def cancel_edit_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data="cancel_edit"
+            )
+        ]
+    ])
