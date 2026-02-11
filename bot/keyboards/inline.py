@@ -13,8 +13,10 @@ def main_menu():
     ])
 
 def task_actions(task_id: int):
+
     return InlineKeyboardMarkup(inline_keyboard=[
         [
+            InlineKeyboardButton(text="⏰ Срок", callback_data=f"deadline:{task_id}"),
             InlineKeyboardButton(text="✏️ Редактировать", callback_data=f"edit:{task_id}")
         ],
         [
@@ -22,6 +24,7 @@ def task_actions(task_id: int):
             InlineKeyboardButton(text="🗑 Удалить", callback_data=f"delete:{task_id}")
         ]
     ])
+
 
 
 def completed_task_actions(task_id: int):

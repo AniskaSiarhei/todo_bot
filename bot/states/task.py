@@ -7,3 +7,8 @@ class AddTaskState(StatesGroup):
 
 class EditTaskState(StatesGroup):
     waiting_for_text = State()
+
+
+class DeadlineState(StatesGroup):
+    waiting_for_date = State()
+

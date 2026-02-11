@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, CallbackQuery
@@ -7,7 +9,7 @@ from bot.keyboards.inline import (task_actions,
                                   main_menu,
                                   completed_tasks_menu, completed_task_actions, cancel_edit_keyboard)
 from bot.renderers.tasks import TasksRenderer
-from bot.states.task import EditTaskState
+from bot.states.task import EditTaskState, DeadlineState
 
 db = Database()
 
@@ -112,7 +114,7 @@ async def list_tasks_command(message: Message):
 
     await message.answer("📋 *Активные задачи:*", parse_mode="Markdown")
 
-    for task_id, title in tasks:
+    for task_id, title, deadline in tasks:
         await message.answer(
             f"⬜ {title}",
             reply_markup=task_actions(task_id)
@@ -129,7 +131,7 @@ async def completed_tasks_command(message: Message):
 
     await message.answer("✅ *Выполненные задачи:*", parse_mode="Markdown")
 
-    for task_id, title in tasks:
+    for task_id, title, deadline in tasks:
         await message.answer(
             f"✅ {title}",
             reply_markup=completed_task_actions(task_id)
@@ -211,6 +213,53 @@ async def cancel_edit_callback(
 
     await callback.answer("Отменено")
 
+async def deadline_callback(callback: CallbackQuery, state: FSMContext):
+
+    task_id = int(callback.data.split(":")[1])
+
+    await state.update_data(deadline_task_id=task_id)
+
+    await callback.message.edit_text(
+        "📅 Введи срок в формате:\n\n"
+        "DD.MM.YYYY HH:MM\n\n"
+        "Пример: 15.02.2026 18:00"
+    )
+
+    await state.set_state(DeadlineState.waiting_for_date)
+
+    await callback.answer()
+
+async def save_deadline(message: Message, state: FSMContext):
+
+    data = await state.get_data()
+    task_id = data.get("deadline_task_id")
+
+    text = message.text.strip()
+
+    try:
+        dt = datetime.strptime(text, "%d.%m.%Y %H:%M")
+    except ValueError:
+        await message.answer("❌ Неверный формат. Пример: 15.02.2026 18:00")
+        return
+
+    if dt < datetime.now():
+        await message.answer("❌ Дата уже прошла")
+        return
+
+    db.set_deadline(
+        task_id,
+        message.from_user.id,
+        dt.isoformat()
+    )
+
+    await state.clear()
+
+    await message.answer("⏰ Срок установлен ✅")
+
+    await TasksRenderer.show_active(
+        message,
+        message.from_user.id
+    )
 
 
 # /menu

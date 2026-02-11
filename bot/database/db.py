@@ -18,6 +18,7 @@ class Database:
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
         with self._connect() as conn:
+            # Основная таблица
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS tasks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,6 +28,19 @@ class Database:
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
+            # Проверяем наличие колонки deadline
+            cursor = conn.execute("PRAGMA table_info(tasks)")
+            columns = [col[1] for col in cursor.fetchall()]
+
+            if "deadline" not in columns:
+                conn.execute("""
+                    ALTER TABLE tasks
+                    ADD COLUMN deadline TEXT
+                """)
+
+                print("✅ Column 'deadline' added")
+
             conn.commit()
 
     def add_task(self, user_id: int, title: str):
@@ -63,10 +77,14 @@ class Database:
 
     def get_active_tasks(self, user_id: int):
         with self._connect() as conn:
-            cursor = conn.execute(
-                "SELECT id, title FROM tasks WHERE user_id = ? AND done = 0 ORDER BY id",
-                (user_id,)
-            )
+            cursor = conn.execute("""
+                SELECT id, title, deadline
+                FROM tasks
+                WHERE user_id = ?
+                AND done = 0
+                ORDER BY id
+            """, (user_id,))
+
             return cursor.fetchall()
 
     def get_completed_tasks(self, user_id: int):
@@ -110,4 +128,28 @@ class Database:
             """, (task_id, user_id))
 
             return cur.fetchone()
+
+    def set_deadline(self, task_id: int, user_id: int, deadline: str):
+        with self._connect() as conn:
+            conn.execute("""
+                UPDATE tasks
+                SET deadline = ?
+                WHERE id = ? AND user_id = ?
+            """, (deadline, task_id, user_id))
+
+            conn.commit()
+
+    def get_tasks_with_deadline(self):
+        with self._connect() as conn:
+            cur = conn.execute("""
+                SELECT id, user_id, title, deadline
+                FROM tasks
+                WHERE done = 0
+                AND deadline IS NOT NULL
+            """)
+
+            conn.commit()
+
+            return cur.fetchall()
+
 

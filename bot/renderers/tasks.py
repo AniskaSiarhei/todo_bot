@@ -3,6 +3,7 @@ from aiogram.types import Message
 
 from bot.database.db import Database
 from bot.keyboards.inline import task_actions, completed_task_actions
+from bot.utils.time_utils import is_expired
 
 db = Database()
 
@@ -15,15 +16,26 @@ class TasksRenderer:
         Показать активные задачи
         """
 
-        tasks = db.get_tasks(user_id)
+        tasks = db.get_active_tasks(user_id)
 
         if not tasks:
             await message.answer("📭 У тебя нет активных задач")
             return
 
-        for task_id, title, _ in tasks:
+        for task_id, title, deadline in tasks:
+
+            expired = is_expired(deadline)
+
+            # Формируем текст
+            if expired:
+                text = f"🔴 {title} (просрочено)"
+            elif deadline:
+                text = f"🟡 {title} — до {deadline}"
+            else:
+                text = f"🟢 {title}"
+
             await message.answer(
-                f"⬜ {title}",
+                text,
                 reply_markup=task_actions(task_id)
             )
 
