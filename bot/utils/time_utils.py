@@ -7,8 +7,8 @@ def is_expired(deadline: str | None) -> bool:
         return False
 
     try:
-        deadline_dt = datetime.strptime(deadline, "%Y-%m-%d %H:%M")
+        dt = datetime.fromisoformat(deadline)
     except ValueError:
         return False
 
-    return deadline_dt < datetime.now()
+    return dt < datetime.now()

@@ -104,21 +104,12 @@ async def delete_completed_tasks_callback(callback: CallbackQuery):
 
 # /list
 async def list_tasks_command(message: Message):
-    tasks = db.get_active_tasks(message.from_user.id)
 
-    if not tasks:
-        await message.answer(
-            "🎉 У тебя нет активных задач!",
-        )
-        return
+    await TasksRenderer.show_active(
+        message,
+        message.from_user.id
+    )
 
-    await message.answer("📋 *Активные задачи:*", parse_mode="Markdown")
-
-    for task_id, title, deadline in tasks:
-        await message.answer(
-            f"⬜ {title}",
-            reply_markup=task_actions(task_id)
-        )
 
 
 # /completed

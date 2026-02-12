@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
@@ -24,15 +26,22 @@ class TasksRenderer:
 
         for task_id, title, deadline in tasks:
 
-            expired = is_expired(deadline)
+            now = datetime.now()
 
-            # Формируем текст
-            if expired:
-                text = f"🔴 {title} (просрочено)"
-            elif deadline:
-                text = f"🟡 {title} — до {deadline}"
+            if deadline:
+                dt = datetime.fromisoformat(deadline)
+
+                if dt < now:
+                    text = f"🔴 {title} (просрочено)"
+                else:
+                    text = f"🟢 {title}"
             else:
-                text = f"🟢 {title}"
+                text = f"⬜ {title}"
+
+            if deadline:
+                dt = datetime.fromisoformat(deadline)
+
+                text += f"\n⏰ До: {dt.strftime('%d.%m.%Y %H:%M')}"
 
             await message.answer(
                 text,

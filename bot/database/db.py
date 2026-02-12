@@ -89,10 +89,14 @@ class Database:
 
     def get_completed_tasks(self, user_id: int):
         with self._connect() as conn:
-            cursor = conn.execute(
-                "SELECT id, title FROM tasks WHERE user_id = ? AND done = 1 ORDER BY id",
-                (user_id,)
-            )
+            cursor = conn.execute("""
+                SELECT id, title, deadline
+                FROM tasks
+                WHERE user_id = ?
+                AND done = 1
+                ORDER BY id
+            """, (user_id,))
+
             return cursor.fetchall()
 
     def delete_completed_tasks(self, user_id: int):

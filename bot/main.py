@@ -22,6 +22,7 @@ from bot.handlers.tasks import (
     list_tasks_command, completed_tasks_command, menu_command, edit_task_callback, save_edited_task,
     cancel_edit_callback, deadline_callback, save_deadline, db
 )
+from bot.services.reminder import deadline_watcher
 from bot.states.task import EditTaskState, DeadlineState
 
 logging.basicConfig(level=logging.INFO)
@@ -103,6 +104,7 @@ async def main():
         DeadlineState.waiting_for_date
     )
 
+    asyncio.create_task(deadline_watcher(bot))
     await dp.start_polling(bot)
 
 async def deadline_checker(bot: Bot):
